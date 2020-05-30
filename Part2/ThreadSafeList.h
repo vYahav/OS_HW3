@@ -58,7 +58,56 @@ class List {
          * @return true if a new node was added and false otherwise
          */
         bool insert(const T& data) {
-			//TODO: add your implementation
+			Node* current = this->head;
+            if(nullptr == current){
+                //meaning, we have en empty list
+                Node* first = new Node(data);
+                this->head = first;
+                this->size++;
+                return true;
+            }
+            pthread_mutex_lock(&(current->lock));
+			Node* next = current->next;
+            if(current->data > data){
+                //then we need to insert the node to be the first in the list
+                Node* first = new Node(data, next);
+                this->head = first;
+                this->size++;
+                pthread_mutex_unlock(&(current->lock));
+                return true;
+            }
+			while(next != NULL && next->data < data){
+                if(current->data == data){
+                    return false;
+                }
+				pthread_mutex_lock(&next->lock);
+				Node* tmp = current;
+				current = next;
+				next = current->next;
+				pthread_mutex_unlock(&tmp->lock);
+			}
+            if(next->data == data){
+                return false;
+            }
+            if(next != nullptr){
+			    pthread_mutex_lock(&next->lock);
+            }
+			Node* newNode = new Node(data,next);
+		    current->next = newNode;
+			// if an error occurred/detected don’t call the hook but instead
+			// release any locks and return false indicating that insert was
+			// failed 
+			/*
+			std::cerr << insert: failed;
+			exit(-1);
+			*/
+			__insert_test_hook();
+			
+			//Unlock
+			pthread_mutex_unlock(&current->lock);
+			pthread_mutex_unlock(&next->lock);
+            this->size++;
+            return true;
         }
 
         /**
