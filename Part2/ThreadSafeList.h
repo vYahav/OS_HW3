@@ -37,11 +37,17 @@ class List {
                 // TODO: Add your methods and data members
                 pthread_mutex_t lock;
                 Node(T d, Node* n = nullptr): data(d), next(n){
-                    pthread_mutex_init(&lock, NULL);
+                    if(pthread_mutex_init(&lock, NULL) != 0){
+                        cerr << "pthread_mutex_init: failed" << endl;
+                        exit(-1);
+                    }
                 }
                 ~Node(){
                     //delete data;
-                    pthread_mutex_destroy(&lock);
+                    if(pthread_mutex_destroy(&lock) != 0){
+                        cerr << "pthread_mutex_destroy: failed" << endl;
+                        exit(-1);
+                    }
                 };
         };
 
