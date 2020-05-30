@@ -11,7 +11,7 @@ public:
     // TODO: define the member variables
 	// Remember: you can only use semaphores!
 	unsigned int num_of_threads;
-	
+	sem_t sem;
 };
 
 #endif // BARRIER_H_
