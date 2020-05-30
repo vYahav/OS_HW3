@@ -76,6 +76,7 @@ class List {
                 this->head = first;
                 this->size++;
                 pthread_mutex_unlock(&(current->lock));
+                pthread_mutex_unlock(&(next->lock));
                 return true;
             }
             
