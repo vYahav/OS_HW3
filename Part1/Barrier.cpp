@@ -6,14 +6,14 @@ Barrier::Barrier(unsigned int num_of_threads){
 }
 
 void Barrier::wait(){
-	sem_trywait(&sem);
+	sem_wait(&sem);
 	int threadCounter;
 	//Wait because there is no N threads waiting.
-	while(sem_getvalue(&sem,&threadCounter) == 0 && threadCounter>0);
+	while(sem_getvalue(&sem, &threadCounter) == 0 && threadCounter > 0);
 												
 	//When there are N threads waiting, restart sem for the next time
 	//we'll use the barrier.
-	sem_destroy(&sem); 
+	sem_destroy(&sem);
 	sem_init(&sem,0,this->N);
 }
 

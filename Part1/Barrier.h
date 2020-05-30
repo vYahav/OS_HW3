@@ -11,7 +11,8 @@ public:
     Barrier(unsigned int num_of_threads);
     void wait();
     ~Barrier();
-    
+    // TODO: define the member variables
+	// Remember: you can only use semaphores!
 };
 
 #endif // BARRIER_H_

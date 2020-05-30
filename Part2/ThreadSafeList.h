@@ -8,18 +8,21 @@
 using namespace std;
 
 template <typename T>
-class List 
-{
+class List {
     public:
         /**
          * Constructor
          */
-        List() { //TODO: add your implementation }
+        List() { //TODO: add your implementation
+            this->head = NULL;
+            this->size = 0;
+        }
 
         /**
          * Destructor
          */
-        ~List(){ //TODO: add your implementation }
+        ~List(){ //TODO: add your implementation
+        }
 
         class Node {
          public:
@@ -53,6 +56,7 @@ class List
          */
         unsigned int getSize() {
 			//TODO: add your implementation
+            return this->size;
         }
 
 		// Don't remove
@@ -85,6 +89,7 @@ class List
 
     private:
         Node* head;
+        int size;
     // TODO: Add your own methods and data members
 };
 
