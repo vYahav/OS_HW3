@@ -22,6 +22,12 @@ class List {
          * Destructor
          */
         ~List(){ //TODO: add your implementation
+            Node* temp = this->head;
+            while(this->temp != NULL){
+                Node* dummy = temp;
+                temp = temp->next;
+                delete dummy;
+            }
         }
 
         class Node {
@@ -31,9 +37,12 @@ class List {
                 // TODO: Add your methods and data members
                 pthread_mutex_t lock;
                 Node(T d, Node* n = nullptr): data(d), next(n){
-                    pthread_mutex_init(&(this->lock), NULL);
+                    pthread_mutex_init(&lock, NULL);
                 }
-                ~Node() = default;
+                ~Node(){
+                    //delete data;
+                    pthread_mutex_destroy(&lock);
+                };
         };
 
         /**
