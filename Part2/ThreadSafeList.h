@@ -67,7 +67,9 @@ class List {
                 return true;
             }
             pthread_mutex_lock(&(current->lock));
+            
 			Node* next = current->next;
+			pthread_mutex_lock(&(next->lock));
             if(current->data > data){
                 //then we need to insert the node to be the first in the list
                 Node* first = new Node(data, next);
@@ -76,22 +78,25 @@ class List {
                 pthread_mutex_unlock(&(current->lock));
                 return true;
             }
+            
 			while(next != NULL && next->data < data){
                 if(current->data == data){
                     return false;
                 }
-				pthread_mutex_lock(&next->lock);
 				Node* tmp = current;
 				current = next;
 				next = current->next;
+				
+				if(next!= NULL) pthread_mutex_lock(&next->lock);
 				pthread_mutex_unlock(&tmp->lock);
 			}
+			
             if(next->data == data){
+				pthread_mutex_unlock(&current->lock);
+				pthread_mutex_unlock(&next->lock);
                 return false;
             }
-            if(next != nullptr){
-			    pthread_mutex_lock(&next->lock);
-            }
+            
 			Node* newNode = new Node(data,next);
 		    current->next = newNode;
 			// if an error occurred/detected don’t call the hook but instead
@@ -116,7 +121,52 @@ class List {
          * @return true if a matched node was found and removed and false otherwise
          */
         bool remove(const T& value) {
-			//TODO: add your implementation
+			Node* current=this->head;
+			
+			//First node should be removed:
+			if(current->data == value){
+				if(current->next == NULL) this->head=current->next;
+				else{
+					this->head=NULL;
+				}
+				//TODO: destroy current here
+				return true;
+			}
+			
+			//Search for the node that should be removed
+			pthread_mutex_lock(&current->lock);
+			Node* next=current->next;
+			pthread_mutex_lock(&next->lock);
+			while(next != NULL && next->data != value){
+				Node* tmp= current;
+				current=next;
+				next=current->next;
+				if(next!=NULL) pthread_mutex_lock(&next->lock);
+				pthread_mutex_unlock(&tmp->lock);
+			}
+			
+			if(next == NULL){
+				pthread_mutex_unlock(&current->lock);
+				return false;
+			}
+			
+			//remove the corresponding node
+			pthread_mutex_lock(&next->next->lock);
+			current->next = next->next;
+			
+			
+			
+			// if an error occurred/detected don’t call the hook but instead
+			// release any locks and return false indicating that remove was
+			// failed
+			__remove_test_hook();
+			
+			//Unlock
+			pthread_mutex_unlock(&current->lock);
+			pthread_mutex_unlock(&next->lock);
+			pthread_mutex_unlock(&next->next->lock);
+			this->size--;
+			return true;
         }
 
         /**
