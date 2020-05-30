@@ -25,10 +25,15 @@ class List {
         }
 
         class Node {
-         public:
-          T data;
-          Node *next;
-          // TODO: Add your methods and data members
+            public:
+                T data;
+                Node *next;
+                // TODO: Add your methods and data members
+                pthread_mutex_t lock;
+                Node(T d, Node* n = nullptr): data(d), next(n){
+                    pthread_mutex_init(&(this->lock), NULL);
+                }
+                ~Node() = default;
         };
 
         /**
@@ -61,27 +66,20 @@ class List {
 
 		// Don't remove
         void print() {
-          Node* temp = head;
-          if (temp == NULL)
-          {
-            cout << "";
-          }
-          else if (temp->next == NULL)
-          {
-            cout << temp->data;
-          }
-          else
-          {
-            while (temp != NULL)
-            {
-              cout << right << setw(3) << temp->data;
-              temp = temp->next;
-              cout << " ";
+            Node* temp = head;
+            if (temp == NULL){
+                cout << "";
+            } else if (temp->next == NULL){
+                cout << temp->data;
+            } else {
+                while (temp != NULL) {
+                    cout << right << setw(3) << temp->data;
+                    temp = temp->next;
+                    cout << " ";
+                }
             }
-          }
-          cout << endl;
+            cout << endl;
         }
-
 		// Don't remove
         virtual void __insert_test_hook() {}
 		// Don't remove
