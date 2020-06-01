@@ -15,6 +15,10 @@ class List {
          */
         List() : size(0) { //TODO: add your implementation
             this->head = NULL;
+            if(pthread_mutex_init(&size_lock, NULL) != 0){
+                cerr << "pthread_mutex_init: failed" << endl;
+                exit(-1);
+            }
         }
 
         /**
@@ -26,6 +30,10 @@ class List {
                 Node* dummy = temp;
                 temp = temp->next;
                 delete dummy;
+            }
+            if(pthread_mutex_destroy(&(this->size_lock) != 0)){
+                cerr << "pthread_mutex_destroy: failed" << endl;
+                exit(-1);
             }
         }
 
@@ -62,7 +70,9 @@ class List {
                 //meaning, we have en empty list
                 Node* first = new Node(data);
                 this->head = first;
+                pthread_mutex_lock(&(this->size_lock));
                 this->size++;
+                pthread_mutex_unlock(&(this->size_lock));
                 return true;
             }
             pthread_mutex_lock(&(current->lock));
@@ -72,7 +82,9 @@ class List {
                 //then we need to insert the node to be the first in the list
                 Node* first = new Node(data, next);
                 this->head = first;
+                pthread_mutex_lock(&(this->size_lock));
                 this->size++;
+                pthread_mutex_unlock(%(this->size_lock));
                 pthread_mutex_unlock(&(current->lock));
                 pthread_mutex_unlock(&(next->lock));
                 return true;
@@ -110,7 +122,9 @@ class List {
 			//Unlock
 			pthread_mutex_unlock(&current->lock);
 			pthread_mutex_unlock(&next->lock);
+            pthread_mutex_lock(&(this->size_lock));
             this->size++;
+            pthread_mutex_unlock(&(this->size_lock));
             return true;
         }
 
@@ -134,6 +148,9 @@ class List {
 				}
 				//TODO: destroy current here
                 delete(current);
+                pthread_mutex_lock(&(this->size_lock));
+                this->size--;
+                pthread_mutex_unlock(&(this->size_lock));
 				return true;
 			}
 			//Search for the node that should be removed
@@ -169,7 +186,9 @@ class List {
 			pthread_mutex_unlock(&current->lock);
 			pthread_mutex_unlock(&next->lock);
 			pthread_mutex_unlock(&next->next->lock);
-			this->size--;
+            pthread_mutex_lock(&(this->size_lock));
+            this->size--;
+            pthread_mutex_unlock(&(this->size_lock));
 			return true;
         }
 
@@ -206,6 +225,7 @@ class List {
     private:
         Node* head;
         int size;
+        pthread_mutex_t size_lock;
     // TODO: Add your own methods and data members
 };
 
