@@ -13,9 +13,8 @@ class List {
         /**
          * Constructor
          */
-        List() { //TODO: add your implementation
+        List() : size(0) { //TODO: add your implementation
             this->head = NULL;
-            this->size = 0;
         }
 
         /**
@@ -67,7 +66,6 @@ class List {
                 return true;
             }
             pthread_mutex_lock(&(current->lock));
-            
 			Node* next = current->next;
 			pthread_mutex_lock(&(next->lock));
             if(current->data > data){
@@ -122,30 +120,35 @@ class List {
          * @return true if a matched node was found and removed and false otherwise
          */
         bool remove(const T& value) {
-			Node* current=this->head;
-			
+            if(nullptr == this->head){
+                return false;
+            }
+			Node* current = this->head;
 			//First node should be removed:
 			if(current->data == value){
-				if(current->next == NULL) this->head=current->next;
-				else{
-					this->head=NULL;
+                pthread_mutex_lock(&(current->lock));
+				if(current->next != NULL){
+                    this->head = current->next;
+                } else {
+					this->head = NULL;
 				}
 				//TODO: destroy current here
+                delete(current);
 				return true;
 			}
-			
 			//Search for the node that should be removed
 			pthread_mutex_lock(&current->lock);
 			Node* next=current->next;
 			pthread_mutex_lock(&next->lock);
 			while(next != NULL && next->data != value){
-				Node* tmp= current;
-				current=next;
-				next=current->next;
-				if(next!=NULL) pthread_mutex_lock(&next->lock);
+				Node* tmp = current;
+				current = next;
+				next = current->next;
+				if(next != NULL){
+                    pthread_mutex_lock(&next->lock);
+                }
 				pthread_mutex_unlock(&tmp->lock);
 			}
-			
 			if(next == NULL){
 				pthread_mutex_unlock(&current->lock);
 				return false;
