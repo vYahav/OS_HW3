@@ -147,6 +147,7 @@ class List {
 					this->head = NULL;
 				}
 				//TODO: destroy current here
+                pthread_mutex_unlock(&(current->lock));
                 delete(current);
                 pthread_mutex_lock(&(this->size_lock));
                 this->size--;
