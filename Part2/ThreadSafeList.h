@@ -26,12 +26,12 @@ class List {
          */
         ~List(){
             Node* temp = this->head;
-            while(this->temp != NULL){
+            while(temp != NULL){
                 Node* dummy = temp;
                 temp = temp->next;
                 delete dummy;
             }
-            if(pthread_mutex_destroy(&(this->size_lock) != 0)){
+            if(pthread_mutex_destroy(&(this->size_lock)) != 0){
                 cerr << "pthread_mutex_destroy: failed" << endl;
                 exit(-1);
             }
@@ -141,7 +141,7 @@ class List {
 			Node* current = this->head;
             pthread_mutex_lock(&(current->lock));
 			if(nullptr == this->head){
-                pthread_mutex_unlock(current->lock);
+                pthread_mutex_unlock(&(current->lock));
                 return false;
             }
             //First node should be removed:
