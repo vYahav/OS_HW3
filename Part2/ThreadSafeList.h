@@ -156,9 +156,9 @@ class List {
 			}
 			//Search for the node that should be removed
 			pthread_mutex_lock(&current->lock);
-			Node* next=current->next;
+			Node* next = current->next;
 			pthread_mutex_lock(&next->lock);
-			while(next != NULL && next->data != value){
+			while(next != NULL && next->data <= value){
 				Node* tmp = current;
 				current = next;
 				next = current->next;
