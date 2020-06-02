@@ -70,13 +70,13 @@ class List {
             if(nullptr == current){
                 //meaning, we have en empty list
                 Node* first = new Node(data);
-                pthread_mutex_lock(&(first->lock));
+               // pthread_mutex_lock(&(first->lock));
                 this->head = first;
                 pthread_mutex_lock(&(this->size_lock));
                 this->size++;
                 pthread_mutex_unlock(&(this->size_lock));
                 __insert_test_hook();
-                pthread_mutex_unlock(&(first->lock));
+               // pthread_mutex_unlock(&(first->lock));
                 return true;
             }
             pthread_mutex_lock(&(current->lock));
@@ -85,7 +85,9 @@ class List {
 				pthread_mutex_lock(&(next->lock));
 			}
             if(current->data > data){
-                pthread_mutex_unlock(&(next->lock));
+                if(next != NULL){
+                    pthread_mutex_unlock(&(next->lock));
+                }
                 //then we need to insert the node to be the first in the list
                 Node* first = new Node(data, current);
                 this->head = first;
@@ -97,7 +99,9 @@ class List {
                 return true;
             } else if(current->data == data) {
                 pthread_mutex_unlock(&(current->lock));
-                pthread_mutex_unlock(&(next->lock));
+                if(next != NULL){
+                    pthread_mutex_unlock(&(next->lock));
+                }
                 return false;
             }
 			while(next != NULL && next->data < data){
@@ -105,13 +109,14 @@ class List {
                 Node* tmp = current;
 				current = next;
 				next = current->next;
-				if(next!= NULL){
+				if(next != NULL){
                     pthread_mutex_lock(&next->lock);
                 }
 				pthread_mutex_unlock(&tmp->lock);
 			}
             if(next != nullptr && next->data == data){
-				pthread_mutex_unlock(&current->lock);
+                if(current != nullptr)
+				    pthread_mutex_unlock(&current->lock);
 				pthread_mutex_unlock(&next->lock);
                 return false;
             }
@@ -171,7 +176,8 @@ class List {
 			//Search for the node that should be removed
 			Node* next = current->next;
 			//std::cout<<"LOCK: " <<next->data<<endl;
-			pthread_mutex_lock(&next->lock);
+			if(next != nullptr)
+                pthread_mutex_lock(&next->lock);
             Node* tmp;
            // cout<<"--Trying to delete "<<value<<"--"<<endl;
 			while(next != NULL && next->data != value){
@@ -187,7 +193,8 @@ class List {
 				//std::cout<<"done: " <<tmp->data<<endl;
 			}
 			if(next == NULL){
-				pthread_mutex_unlock(&current->lock);
+                if(current != NULL)
+				    pthread_mutex_unlock(&current->lock);
 				return false;
 			}
 			
@@ -241,6 +248,34 @@ class List {
         virtual void __insert_test_hook() {}
 		// Don't remove
         virtual void __remove_test_hook() {}
+
+    bool isSorted(){
+        pthread_mutex_t dummy_mutex;
+        pthread_mutex_init(&dummy_mutex, NULL);
+        pthread_mutex_lock(&dummy_mutex);
+        if(!head) {
+            pthread_mutex_unlock(&dummy_mutex);
+            return true;
+        }else{
+            pthread_mutex_lock(&head->lock);
+            pthread_mutex_unlock(&dummy_mutex);
+        }
+        Node* prev = head;
+        Node* curr = head->next;
+        while(curr) {
+            pthread_mutex_lock(&curr->lock);
+            if(prev->data >= curr->data) {
+                pthread_mutex_unlock(&curr->lock);
+                pthread_mutex_unlock(&prev->lock);
+                return false;
+            }
+            pthread_mutex_unlock(&prev->lock);
+            prev = curr;
+            curr = curr->next;
+        }
+        pthread_mutex_unlock(&prev->lock);
+        return true;
+    }
 
     private:
         Node* head;
