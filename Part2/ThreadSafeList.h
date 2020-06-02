@@ -75,12 +75,15 @@ class List {
                 pthread_mutex_lock(&(this->size_lock));
                 this->size++;
                 pthread_mutex_unlock(&(this->size_lock));
+                __insert_test_hook();
                 pthread_mutex_unlock(&(first->lock));
                 return true;
             }
             pthread_mutex_lock(&(current->lock));
 			Node* next = current->next;
-			pthread_mutex_lock(&(next->lock));
+			if(next != NULL){
+				pthread_mutex_lock(&(next->lock));
+			}
             if(current->data > data){
                 pthread_mutex_unlock(&(next->lock));
                 //then we need to insert the node to be the first in the list
@@ -89,6 +92,7 @@ class List {
                 pthread_mutex_lock(&(this->size_lock));
                 this->size++;
                 pthread_mutex_unlock(&(this->size_lock));
+                __insert_test_hook();
                 pthread_mutex_unlock(&(current->lock));
                 return true;
             } else if(current->data == data) {
@@ -114,21 +118,26 @@ class List {
             
 			Node* newNode = new Node(data,next);
 		    current->next = newNode;
+		    
+		    pthread_mutex_lock(&(this->size_lock));
+            this->size++;
+            pthread_mutex_unlock(&(this->size_lock));
 			// if an error occurred/detected don’t call the hook but instead
 			// release any locks and return false indicating that insert was
 			// failed 
-			/*
-			std::cerr << insert: failed;
-			exit(-1);
-			*/
+			
+			//std::cerr << insert: failed;
+			//exit(-1);
+			
 			__insert_test_hook();
 			
 			//Unlock
-			pthread_mutex_unlock(&current->lock);
-			pthread_mutex_unlock(&next->lock);
-            pthread_mutex_lock(&(this->size_lock));
-            this->size++;
-            pthread_mutex_unlock(&(this->size_lock));
+			if(current!=NULL){
+                pthread_mutex_unlock(&current->lock);
+            }
+            if(next != NULL){
+                pthread_mutex_unlock(&next->lock);
+            }
             return true;
         }
 
@@ -151,25 +160,31 @@ class List {
                 } else {
 					this->head = NULL;
 				}
-                pthread_mutex_unlock(&(current->lock));
-                delete(current);
-                pthread_mutex_lock(&(this->size_lock));
+				pthread_mutex_lock(&(this->size_lock));
                 this->size--;
                 pthread_mutex_unlock(&(this->size_lock));
+				__remove_test_hook();
+                pthread_mutex_unlock(&(current->lock));
+                delete(current);
 				return true;
 			}
 			//Search for the node that should be removed
 			Node* next = current->next;
+			//std::cout<<"LOCK: " <<next->data<<endl;
 			pthread_mutex_lock(&next->lock);
             Node* tmp;
+           // cout<<"--Trying to delete "<<value<<"--"<<endl;
 			while(next != NULL && next->data != value){
 				tmp = current;
 				current = next;
 				next = current->next;
 				if(next != NULL){
+				//	std::cout<<"LOCK: " <<next->data<<endl;
                     pthread_mutex_lock(&next->lock);
                 }
+               // std::cout<<"UNLOCK: " <<tmp->data<<endl;
 				pthread_mutex_unlock(&tmp->lock);
+				//std::cout<<"done: " <<tmp->data<<endl;
 			}
 			if(next == NULL){
 				pthread_mutex_unlock(&current->lock);
@@ -177,18 +192,20 @@ class List {
 			}
 			
 			//remove the corresponding node
-			pthread_mutex_lock(&next->next->lock);
+			//std::cout<<"LOCK: " <<next->next->data<<endl;
+			//pthread_mutex_lock(&next->next->lock);
+			//std::cout<<"done: " <<next->next->data<<endl;
 			current->next = next->next;
 			
 			// if an error occurred/detected don’t call the hook but instead
 			// release any locks and return false indicating that remove was
 			// failed
 			__remove_test_hook();
-			
+			//cout<<"------"<<endl;
 			//Unlock
 			pthread_mutex_unlock(&current->lock);
 			pthread_mutex_unlock(&next->lock);
-			pthread_mutex_unlock(&next->next->lock);
+			//pthread_mutex_unlock(&next->next->lock);
             delete(next);
             pthread_mutex_lock(&(this->size_lock));
             this->size--;
