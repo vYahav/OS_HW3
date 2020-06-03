@@ -6,7 +6,10 @@
 class Barrier {
 private:
 	unsigned int N;
-	sem_t sem;
+    unsigned int count;
+	sem_t barrier_sem;
+    sem_t flow_sem;
+    sem_t count_sem;
 public:
     Barrier(unsigned int num_of_threads);
     void wait();
