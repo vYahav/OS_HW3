@@ -3,7 +3,7 @@
 #include <assert.h>
 #include <ctime> // temporary for random tests
 
-#define magicNumber 100             // TODO set the magic number as you wish
+#define magicNumber 50             // TODO set the magic number as you wish
 #define threadsNumber 20            // TODO set the number of threads that your PC can handle
 
 using namespace std;
@@ -115,7 +115,7 @@ int main() {
 
     srand(time(NULL));                          //for random numbers in tests
     cout << "Start testing ThreadSafeList" << endl;
-    for(int i = 1 ; i<=5 ; i++) {                  // TODO set the number of tests you need
+    for(int i = 1 ; i<=3 ; i++) {                  // TODO set the number of tests you need
         std::cout << "Start Test number: " << i << std::endl;     //TODO remove comments if you want to print. ! will increase your tests time !
         std::cout
                 << "########################################################################### \n"
