@@ -118,5 +118,5 @@ int main() {
     else PASSED;
 
     std::cout << "All done, see ya" << std::endl;
-
+    return 0;
 }

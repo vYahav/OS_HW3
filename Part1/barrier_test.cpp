@@ -1,5 +1,5 @@
 #include <iostream>
-#include "../src/Barrier.h"
+#include "Barrier.h"
 
 using namespace std;
 
@@ -110,4 +110,5 @@ int main(int argc, char* argv[])
     delete[] GLOBALS::threads;
     delete[] GLOBALS::results;
     sem_destroy(&GLOBALS::mutex);
+    return 0;
 }
